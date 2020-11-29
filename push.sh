@@ -1,17 +1,38 @@
 #!/bin/bash
 
-# The path (relative to this script) to the version file this script will update before pushing
-VERSIONFILES='version'
+#
+# CONFIG VARS
+#
 
+# The path (relative to this script) to the version file this script will update before pushing
+VERSIONFILE='version'
 # The git branch name where this script will push
 BRANCH='master'
 
-CURRENTDIR=$(pwd)
+#
+# BEGIN
+#
+
+# Go to push.sh dir
+currentDir=$(pwd)
 cd $(dirname $0)
 
-VER=$(cat $VERSIONFILES | grep "version:" |  cut -d"'" -f2)
+# Retrieving current version
+currentVersion=$(cat $VERSIONFILE | grep version | tr -d \"\':,[:space:][:alpha:])
 
-echo Current version : $VER
+if [[ -z $currentVersion ]]
+then
+	echo Error : cannot retrieve the version number.
+	exit -1
+fi
+
+currMaj=$(echo $currentVersion | cut -d"." -f1)
+currMin=$(echo $currentVersion | cut -d"." -f2)
+currPatch=$(echo $currentVersion | cut -d"." -f3)
+
+
+# Asking user for kind of update
+echo Current version : $currentVersion
 echo ---
 echo Which type of new version to push ?
 echo Major [M] ? Minor [m] ? Patch [Anything else] ?
@@ -24,27 +45,31 @@ then
 	exit 0
 fi
 
-IFS="." read -r -a ARRVER <<< "$VER"
-
+# Updating version number in $VERSIONFILE
 if [[ -n $userInput ]] && [[ $userInput = "M" ]]
 then
-    ARRVER[0]=$((${ARRVER[0]} + 1))
-    ARRVER[1]=0
-    ARRVER[2]=0
+	currMaj=$((currMaj+1))
+	currMin=0
+	currPatch=0
 elif [[ -n $userInput ]] && [[ $userInput = "m" ]]
 then
-    ARRVER[1]=$((${ARRVER[1]} + 1))
-    ARRVER[2]=0
+    currMin=$((currMin+1))
+	currPatch=0
 else
-    ARRVER[2]=$((${ARRVER[2]} + 1))
+    currPatch=$((currPatch+1))
 fi
-NVER="${ARRVER[0]}.${ARRVER[1]}.${ARRVER[2]}"
-sed -i "s/$VER/$NVER/g" $VERSIONFILES
+nextVersion="$currMaj.$currMin.$currPatch"
+sed -i "s/$currentVersion/$nextVersion/g" $VERSIONFILE
 
-echo Pushing version $NVER
+# Push to git repo
+echo Pushing version $nextVersion
 git add .
-git commit -a -m "Pushing version $NVER"
+git commit -a -m "Pushing version $nextVersion"
 git push origin $BRANCH
-echo Version $NVER successfuly pushed!
+echo Version $nextVersion successfuly pushed!
 
-cd $CURRENTDIR
+cd $currentDir
+
+#
+# END
+#
