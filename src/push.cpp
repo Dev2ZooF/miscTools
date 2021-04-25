@@ -54,6 +54,7 @@ int main(int argc, char **argv)
     string configHome("");
     if (getenv("HOME")) {
         configHome = getenv("HOME");
+        configHome.append("/.config");
     } else if (getenv("APPDATA")) {
         configHome = getenv("APPDATA");
     } else if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
@@ -63,7 +64,7 @@ int main(int argc, char **argv)
         cerr << "Error : no home path discovered..." << endl;
         exit(-1);
     }
-    const string CONFIG_FILE_PATH(utils::files::parsePath(configHome) + "/.Dev2ZooF/config/push.json");
+    const string CONFIG_FILE_PATH(utils::files::parsePath(configHome) + "/Dev2ZooF/push/config.json");
 
     string projPath("");
     vector<Project> projects;

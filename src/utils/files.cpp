@@ -1,5 +1,6 @@
 #include "include/files.hpp"
 #include <string>
+#include <algorithm>
 #include <sys/stat.h>
 #include <experimental/filesystem>
 
